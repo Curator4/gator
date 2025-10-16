@@ -73,6 +73,7 @@ func main() {
 	c.register("users", handlerUsers)
 	c.register("agg", handlerAgg)
 	c.register("addfeed", handlerAddFeed)
+	c.register("feeds", handlerFeeds)
 	
 	if len(os.Args) < 2 {
 		fmt.Printf("needs at least 2 arguments\n")
@@ -203,6 +204,23 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 	fmt.Printf("new feed:\n %+v \n", feed)
+
+	return nil
+}
+
+func handlerFeeds(s *state, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("expects no arguments")
+	}
+
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("%+v\n", feed)
+	}
 
 	return nil
 }
