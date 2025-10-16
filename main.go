@@ -72,6 +72,7 @@ func main() {
 	c.register("reset", handlerReset)
 	c.register("users", handlerUsers)
 	c.register("agg", handlerAgg)
+	c.register("addfeed", handlerAddFeed)
 	
 	if len(os.Args) < 2 {
 		fmt.Printf("needs at least 2 arguments\n")
@@ -172,5 +173,36 @@ func handlerAgg(s *state, cmd command) error {
 		return err
 	}
 	fmt.Printf("%+v\n", feed)
+	return nil
+}
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.args) != 2 {
+		return errors.New("addfeed expects exactly 2 arguments, name and url")
+	}
+	name := cmd.args[0]
+	url := cmd.args[1]
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	current_time := time.Now()
+	params := database.CreateFeedParams{
+		ID: uuid.New(),
+		CreatedAt: current_time,
+		UpdatedAt: current_time,
+		Name: name,
+		Url: url,
+		UserID: user.ID,
+	}
+
+	feed, err := s.db.CreateFeed(context.Background(), params)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("new feed:\n %+v \n", feed)
+
 	return nil
 }
