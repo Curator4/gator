@@ -1,18 +1,18 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"log"
-	"errors"
-	"time"
 	"context"
 	"database/sql"
-	"github.com/google/uuid"
+	"errors"
+	"fmt"
 	"github.com/curator4/gator/internal/config"
 	"github.com/curator4/gator/internal/database"
 	"github.com/curator4/gator/internal/rss"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"log"
+	"os"
+	"time"
 )
 
 // constants
@@ -21,7 +21,7 @@ const dbURL = "postgres://curator:solitude4@localhost:5432/gator?sslmode=disable
 // structs
 type state struct {
 	cfg *config.Config
-	db *database.Queries
+	db  *database.Queries
 }
 
 type command struct {
@@ -45,7 +45,6 @@ func (c *commands) register(name string, f func(*state, command) error) {
 	c.handlers[name] = f
 }
 
-
 // main
 func main() {
 	cfg, err := config.Read()
@@ -60,7 +59,7 @@ func main() {
 
 	s := &state{
 		cfg: &cfg,
-		db: database.New(db),
+		db:  database.New(db),
 	}
 
 	c := &commands{
@@ -74,7 +73,9 @@ func main() {
 	c.register("agg", handlerAgg)
 	c.register("addfeed", handlerAddFeed)
 	c.register("feeds", handlerFeeds)
-	
+	c.register("follow", handlerFollow)
+	c.register("following", handlerFollowing)
+
 	if len(os.Args) < 2 {
 		fmt.Printf("needs at least 2 arguments\n")
 		os.Exit(1)
@@ -92,7 +93,6 @@ func main() {
 		os.Exit(1)
 	}
 }
-
 
 // functions
 func handlerLogin(s *state, cmd command) error {
@@ -123,17 +123,17 @@ func handlerRegister(s *state, cmd command) error {
 
 	current_time := time.Now()
 	params := database.CreateUserParams{
-		ID: uuid.New(),
+		ID:        uuid.New(),
 		CreatedAt: current_time,
 		UpdatedAt: current_time,
-		Name: username,
+		Name:      username,
 	}
 
 	user, err := s.db.CreateUser(context.Background(), params)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
-	
+
 	if err := s.cfg.SetUser(username); err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func handlerReset(s *state, cmd command) error {
 	err := s.db.Reset(context.Background())
 	if err != nil {
 		return err
-	} 
+	}
 	fmt.Printf("succesfully reset users table\n")
 	return nil
 }
@@ -191,18 +191,32 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	current_time := time.Now()
 	params := database.CreateFeedParams{
-		ID: uuid.New(),
+		ID:        uuid.New(),
 		CreatedAt: current_time,
 		UpdatedAt: current_time,
-		Name: name,
-		Url: url,
-		UserID: user.ID,
+		Name:      name,
+		Url:       url,
+		UserID:    user.ID,
+	}
+
+	feed_follow_params := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: current_time,
+		UpdatedAt: current_time,
+		UserID:    user.ID,
+		FeedID:    params.ID,
 	}
 
 	feed, err := s.db.CreateFeed(context.Background(), params)
 	if err != nil {
 		return err
 	}
+
+	_, err = s.db.CreateFeedFollow(context.Background(), feed_follow_params)
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("new feed:\n %+v \n", feed)
 
 	return nil
@@ -220,6 +234,64 @@ func handlerFeeds(s *state, cmd command) error {
 
 	for _, feed := range feeds {
 		fmt.Printf("%+v\n", feed)
+	}
+
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) != 1 {
+		return errors.New("expects 1 argument")
+	}
+
+	url := cmd.args[0]
+	current_time := time.Now()
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.db.GetFeedByURL(context.Background(), url)
+	if err != nil {
+		return err
+	}
+
+	params := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: current_time,
+		UpdatedAt: current_time,
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+
+	feed_follow, err := s.db.CreateFeedFollow(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("user: %s now following feed: %s\n", feed_follow.UserName, feed_follow.FeedName)
+
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	if len(cmd.args) != 0 {
+		return errors.New("expects no argument")
+	}
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed_follows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("user: %s following feeds:\n", s.cfg.CurrentUserName)
+	for _, feed_follow := range feed_follows {
+		fmt.Printf("%s\n", feed_follow.FeedName)
 	}
 
 	return nil
