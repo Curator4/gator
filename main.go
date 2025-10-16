@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/curator4/gator/internal/config"
 	"github.com/curator4/gator/internal/database"
+	"github.com/curator4/gator/internal/rss"
 	_ "github.com/lib/pq"
 )
 
@@ -70,6 +71,7 @@ func main() {
 	c.register("register", handlerRegister)
 	c.register("reset", handlerReset)
 	c.register("users", handlerUsers)
+	c.register("agg", handlerAgg)
 	
 	if len(os.Args) < 2 {
 		fmt.Printf("needs at least 2 arguments\n")
@@ -161,5 +163,14 @@ func handlerUsers(s *state, cmd command) error {
 			fmt.Printf("* %s\n", user.Name)
 		}
 	}
+	return nil
+}
+
+func handlerAgg(s *state, cmd command) error {
+	feed, err := rss.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%+v\n", feed)
 	return nil
 }
