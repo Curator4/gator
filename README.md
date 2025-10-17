@@ -1,4 +1,5 @@
 # Setup
+my completion of the [bootdev](https://www.boot.dev/dashboard) gator (blog aggregator) project. in short.. a project to integrate http calls (rss feeds) with a local postgres database. I didn't do much outside the scope of the assignment.
 
 ## Software needed:
 - postgres
