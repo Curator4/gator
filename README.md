@@ -1,19 +1,15 @@
-# Gator
-
-## setup
-
-### software
+# setup
 software needed:
 - postgres
 - Go (compilation)
 
-  ### Config
   To run you need a `~/.gatorconfig.json` file with your database URL and username:
   ```json
   {
     "db_url": "postgres://username:password@localhost:5432/gator?sslmode=disable",
     "current_user_name": "your_username"
   }
+
 ### install
 - go run . <command> to run for testing
 - <b>go install</b> to compile and install the binary to the go bin directory, then runnable with just gator
