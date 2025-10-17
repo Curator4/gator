@@ -330,7 +330,7 @@ func handlerBrowse(s *state, cmd command, user database.User) error {
 	if len(cmd.args) > 1 {
 		return errors.New("too many args")
 	}
-	limit := 2
+	limit := 8
 	if len(cmd.args) == 1 {
 		var err error
 		limit, err = strconv.Atoi(cmd.args[0])
