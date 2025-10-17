@@ -1,6 +1,9 @@
 # Setup
 my completion of the [bootdev](https://www.boot.dev/dashboard) gator (blog aggregator) project. in short.. a project to integrate http calls (rss feeds) with a local postgres database. I didn't do much outside the scope of the assignment.
+
+
 frankly, I had been wanting to make some sort of rudimentary plugin to like show important news or cool quotes etc. So i might come back to this at some point, or well, not this. but use it as reference to a more involved tui version. but am kind of in rush lately.
+
 Thx to bootdev team, good project.
 
 ## Software needed:
