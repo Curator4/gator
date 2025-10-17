@@ -50,5 +50,5 @@ gator agg <duration>       # Run feed aggregator (e.g., 1m, 30s)
 ### Other
 ```bash
 gator help                 # Show help message
-gator reset                # Reset database (delete all users)
+gator reset                # Reset database (deletes EVERYTHING)
 ```

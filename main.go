@@ -117,7 +117,7 @@ func handlerHelp(s *state, cmd command) error {
 	fmt.Println("  unfollow <url>            Unfollow a feed")
 	fmt.Println("  browse [limit]            Browse recent posts (default 8)")
 	fmt.Println("  agg <duration>            Run feed aggregator (e.g., 1m, 30s)")
-	fmt.Println("  reset                     Reset database (delete all users)")
+	fmt.Println("  reset                     Reset database (deletes EVERYTHING)")
 	return nil
 }
 
