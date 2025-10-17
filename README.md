@@ -24,16 +24,22 @@ To run you need a `~/.gatorconfig.json` file with your database URL and username
 intended usage is keep agg running in background, then use browse to search i guess?
 
 ### User Management
-- **`gator register <username>`** - Create a new user
-- **`gator login <username>`** - Login as a user
+```bash
+gator register <username>  # Create a new user
+gator login <username>     # Login as a user
+```
 
 ### Feed Management
-- **`gator addfeed <name> <url>`** - Add an RSS feed
-- **`gator feeds`** - List all feeds
-- **`gator follow <url>`** - Follow a feed
-- **`gator following`** - Show feeds you're following
-- **`gator unfollow <url>`** - Unfollow a feed
+```bash
+gator addfeed <name> <url> # Add an RSS feed
+gator feeds                # List all feeds
+gator follow <url>         # Follow a feed
+gator following            # Show feeds you're following
+gator unfollow <url>       # Unfollow a feed
+```
 
 ### Reading
-- **`gator browse [limit]`** - Browse recent posts (default 8)
-- **`gator agg <duration>`** - Run feed aggregator (e.g., 1m, 30s)
+```bash
+gator browse [limit]       # Browse recent posts (default 8)
+gator agg <duration>       # Run feed aggregator (e.g., 1m, 30s)
+```
