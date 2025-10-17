@@ -9,9 +9,13 @@ import (
 	"github.com/curator4/gator/internal/database"
 	"github.com/curator4/gator/internal/rss"
 	"github.com/google/uuid"
+	"html"
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -76,6 +80,7 @@ func main() {
 	c.register("follow", middlewareLoggedIn(handlerFollow))
 	c.register("following", middlewareLoggedIn(handlerFollowing))
 	c.register("unfollow", middlewareLoggedIn(handlerUnfollow))
+	c.register("browse", middlewareLoggedIn(handlerBrowse))
 
 	if len(os.Args) < 2 {
 		fmt.Printf("needs at least 2 arguments\n")
@@ -321,6 +326,50 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 	return nil
 }
 
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	if len(cmd.args) > 1 {
+		return errors.New("too many args")
+	}
+	limit := 2
+	if len(cmd.args) == 1 {
+		var err error
+		limit, err = strconv.Atoi(cmd.args[0])
+		if err != nil {
+			return err
+		}
+	}
+
+	params := database.GetUserPostsParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	}
+
+	posts, err := s.db.GetUserPosts(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Found %d posts:\n", len(posts))
+	for _, post := range posts {
+		fmt.Println("=====================================")
+		fmt.Printf("Title: \033]8;;%s\033\\%s\033]8;;\033\\\n", post.Url, post.Title)
+		fmt.Printf("Feed: %s\n", post.FeedName)
+		if post.Description.Valid {
+			// Strip HTML tags and unescape HTML entities
+			desc := post.Description.String
+			re := regexp.MustCompile(`<[^>]*>`)
+			desc = re.ReplaceAllString(desc, "")
+			desc = html.UnescapeString(desc)
+			fmt.Printf("Description: %s\n", desc)
+		}
+		fmt.Printf("Published: %s\n", post.PublishedAt.Format("2006-01-02 15:04:05"))
+		fmt.Println("=====================================")
+		fmt.Println()
+	}
+
+	return nil
+}
+
 // helper
 func scrapeFeeds(s *state) error {
 	feed, err := s.db.GetNextFeedToFetch(context.Background())
@@ -346,7 +395,39 @@ func scrapeFeeds(s *state) error {
 	}
 
 	for _, item := range rss_feed.Channel.Item {
-		fmt.Println(item.Title)
+		// Parse published date
+		publishedAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			// Try alternate format
+			publishedAt, err = time.Parse(time.RFC1123, item.PubDate)
+			if err != nil {
+				// Fallback to current time if parsing fails
+				publishedAt = current_time
+			}
+		}
+
+		params := database.CreatePostParams{
+			ID:        uuid.New(),
+			CreatedAt: current_time,
+			UpdatedAt: current_time,
+			Title:     item.Title,
+			Url:       item.Link,
+			Description: sql.NullString{
+				String: item.Description,
+				Valid:  item.Description != "",
+			},
+			PublishedAt: publishedAt,
+			FeedID:      feed.ID,
+		}
+
+		if err := s.db.CreatePost(context.Background(), params); err != nil {
+			// Ignore duplicate URL errors
+			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "UNIQUE constraint") {
+				continue
+			}
+			// Log other errors
+			fmt.Println("Error creating post:", err)
+		}
 	}
 
 	return nil
