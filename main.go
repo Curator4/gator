@@ -70,6 +70,7 @@ func main() {
 		handlers: make(map[string]func(*state, command) error),
 	}
 
+	c.register("help", handlerHelp)
 	c.register("login", handlerLogin)
 	c.register("register", handlerRegister)
 	c.register("reset", handlerReset)
@@ -101,6 +102,25 @@ func main() {
 }
 
 // handlers
+func handlerHelp(s *state, cmd command) error {
+	fmt.Println("gator - RSS feed aggregator")
+	fmt.Println("\nUsage: gator <command> [arguments]")
+	fmt.Println("\nCommands:")
+	fmt.Println("  help                      Show this help message")
+	fmt.Println("  register <username>       Create a new user")
+	fmt.Println("  login <username>          Login as a user")
+	fmt.Println("  users                     List all users")
+	fmt.Println("  addfeed <name> <url>      Add an RSS feed")
+	fmt.Println("  feeds                     List all feeds")
+	fmt.Println("  follow <url>              Follow a feed")
+	fmt.Println("  following                 Show feeds you're following")
+	fmt.Println("  unfollow <url>            Unfollow a feed")
+	fmt.Println("  browse [limit]            Browse recent posts (default 8)")
+	fmt.Println("  agg <duration>            Run feed aggregator (e.g., 1m, 30s)")
+	fmt.Println("  reset                     Reset database (delete all users)")
+	return nil
+}
+
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("login expects a single argument")
