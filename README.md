@@ -16,6 +16,8 @@ To run you need a `~/.gatorconfig.json` file with your database URL and username
 ```
 
 ## Install
+- create postgres gator db
+- run migrations in sql/schema with goose
 - `go run . <command>` to run for testing
 - **go install** to compile and install the binary to the go bin directory, then runnable with just gator
 
