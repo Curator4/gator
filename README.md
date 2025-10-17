@@ -52,3 +52,23 @@ gator agg <duration>       # Run feed aggregator (e.g., 1m, 30s)
 gator help                 # Show help message
 gator reset                # Reset database (deletes EVERYTHING)
 ```
+
+# extra
+- i added the agg to my .zshrc, lets see how it goes.
+- changed default browse limit to 8
+- added 'gb' gator browse alias
+- added the help command
+- added some random feeds:
+{Name:Hugging Face Blog Url:https://huggingface.co/blog/feed.xml Username:curator}
+{Name:Rock Paper Shotgun Url:https://www.rockpapershotgun.com/feed Username:curator}
+{Name:PC Gamer Url:https://www.pcgamer.com/rss/ Username:curator}
+{Name:Paradox Interactive Url:https://www.paradoxinteractive.com/games/feed Username:curator}
+{Name:IGN Strategy Games Url:https://feeds.ign.com/ign/games-all Username:curator}
+{Name:Anime News Network Url:https://www.animenewsnetwork.com/all/rss.xml Username:curator}
+{Name:Ars Technica Url:https://feeds.arstechnica.com/arstechnica/index Username:curator}
+{Name:Go Blog Url:https://go.dev/blog/feed.atom Username:curator}
+{Name:MIT Tech Review Url:https://www.technologyreview.com/feed/ Username:curator}
+{Name:OpenAI Blog Url:https://openai.com/blog/rss.xml Username:curator}
+{Name:Anthropic News Url:https://www.anthropic.com/news/rss.xml Username:curator}
+{Name:Google AI Blog Url:https://ai.googleblog.com/feeds/posts/default Username:curator}
+{Name:DeepMind Blog Url:https://www.deepmind.com/blog/rss.xml Username:curator}
